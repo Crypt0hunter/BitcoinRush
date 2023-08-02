@@ -1,0 +1,89 @@
+
+#include "Timer.h"
+#include "BSGS.h"
+#include "SECPK1/SECP256k1.h"
+#include <fstream>
+#include <string>
+#include <string.h>
+#include <stdexcept>
+
+#define RELEASE "1.1"
+
+using namespace std;
+
+// ------------------------------------------------------------------------------------------
+
+void printUsage() {
+
+  printf("BSGS [-v] [-t nbThread] inFile\n");
+  printf(" -v: Print version\n");
+  printf(" -t nbThread: Secify number of thread\n");
+  printf(" inFile: intput configuration file\n");
+  exit(0);
+
+}
+
+// ------------------------------------------------------------------------------------------
+
+int getInt(string name,char *v) {
+
+  int r;
+
+  try {
+
+    r = std::stoi(string(v));
+
+  } catch(std::invalid_argument&) {
+
+    printf("Invalid %s argument, number expected\n",name.c_str());
+    exit(-1);
+
+  }
+
+  return r;
+
+}
+
+// ------------------------------------------------------------------------------------------
+
+int main(int argc, char* argv[]) {
+
+  // Global Init
+  Timer::Init();
+
+  // Init SecpK1
+  Secp256K1 *secp = new Secp256K1();
+  secp->Init();
+
+  int a = 1;
+  int nbCPUThread = Timer::getCoreNumber();
+  string configFile = "";
+
+  while (a < argc) {
+
+    if(strcmp(argv[a], "-t") == 0) {
+      a++;
+      nbCPUThread = getInt("nbCPUThread",argv[a]);
+      a++;
+    } else if (strcmp(argv[a], "-h") == 0) {
+      printUsage();
+    } else if (a == argc - 1) {
+      configFile = string(argv[a]);
+      a++;
+    } else {
+      printf("Unexpected %s argument\n",argv[a]);
+      exit(-1);
+    }
+
+  }
+
+  printf("BSGS v" RELEASE "\n");
+
+  BSGS *v = new BSGS(secp);
+  if( !v->ParseConfigFile(configFile) )
+    exit(-1);
+  v->Run(nbCPUThread);
+
+  return 0;
+
+}
