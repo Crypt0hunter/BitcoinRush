@@ -1,3 +1,4 @@
+// Thank's for JeanLucPons//
 #include "BSGS.h"
 #include <fstream>
 #include "SECPK1/IntGroup.h"
